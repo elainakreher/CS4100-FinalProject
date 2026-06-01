@@ -19,14 +19,10 @@ Build a Minesweeper AI agent from scratch using techniques such as:
 
 ## Project Structure
 
-src/environment
-Game board and Minesweeper logic
+src/environment: Game board and Minesweeper logic
 
-src/agents
-AI agents
+src/agents: AI agents
 
-tests
-Unit tests
+tests: Unit tests
 
-results
-Experimental results
+results: Experimental results
