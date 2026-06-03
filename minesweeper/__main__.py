@@ -1,5 +1,5 @@
 from http.server import ThreadingHTTPServer, HTTPServer
-from handler import MinesweeperRequestHandler
+from .handler import MinesweeperRequestHandler
 import argparse
 
 # Arguments

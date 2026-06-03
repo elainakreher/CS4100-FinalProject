@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import random, string
-from minesweeper import Minesweeper
+from .minesweeper import Minesweeper
 
 games = {}
 
