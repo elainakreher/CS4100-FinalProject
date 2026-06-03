@@ -39,16 +39,6 @@ class RandomAgent(BaseAgent):
 
 
 if __name__ == "__main__":
-    """
-    This lets us test the RandomAgent directly by running:
-
-        python agents/random_agent.py
-
-    Make sure the Minesweeper API server is already running first.
-    """
-
     agent = RandomAgent(width=10, height=10, mine_count=10)
-
     result = agent.play_game()
-
     print("RandomAgent finished with result:", result)
