@@ -3,7 +3,7 @@ RuleBasedAgent uses basic Minesweeper logic to choose moves
 
 Logic:
 - doesnt calculate probabilities & only makes guaranteed safe moves when possible
-- if no guaranteed safe move exists, it falls back to a random unknown cell
+- if no guaranteed safe move exists, it falls back to a random unknown cell 
 """
 import random
 from source.agents.base_agent import BaseAgent

@@ -1,0 +1,6 @@
+agent,games,wins,losses,win_rate,average_reward,average_episode_length,average_safe_cells_revealed,average_runtime,training_episodes,training_wins,training_losses,q_table_size,replay_buffer_size,network_parameters
+RandomAgent,100,27,73,0.27,-28.43,3.89,16.5,0.0019215035438537597,0,,,,,
+RuleBasedAgent,100,74,26,0.74,69.43,5.25,19.57,0.0022718000411987307,0,,,,,
+ProbabilityAgent,100,73,27,0.73,67.95,5.87,18.37,0.002506885528564453,0,,,,,
+RLAgent,100,27,73,0.27,-27.53,4.26,17.1,0.0016395783424377442,1000,202,798,1810,,
+DQNAgent,100,46,54,0.46,13.07,4.32,19.44,0.001840829849243164,1000,307,693,,4514,7449
