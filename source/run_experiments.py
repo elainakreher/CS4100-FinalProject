@@ -15,6 +15,7 @@ from source.agents.random_agent import RandomAgent
 from source.agents.rule_based_agent import RuleBasedAgent
 from source.agents.probability_agent import ProbabilityAgent
 from source.agents.rl_agent import RLAgent
+import matplotlib.pyplot as plt
 
 def count_hidden_cells(board):
     return sum(row.count(-1) for row in board)
@@ -224,6 +225,53 @@ def print_results(results):
         if result["q_table_size"] != "":
             print(f"Q-table Size: {result['q_table_size']}")
 
+def save_results_table_png(results, filename="results/figures/experiment_results_table.png"):
+    os.makedirs("results/figures", exist_ok=True)
+    table_data = []
+    for result in results:
+        table_data.append([
+            result["agent"],
+            result["games"],
+            result["wins"],
+            result["losses"],
+            f"{result['win_rate']:.2%}",
+            f"{result['average_reward']:.2f}",
+            f"{result['average_episode_length']:.2f}",
+            f"{result['average_safe_cells_revealed']:.2f}",
+            f"{result['average_runtime']:.4f}s",
+            result["q_table_size"]
+        ])
+
+    column_labels = [
+        "Agent",
+        "Games",
+        "Wins",
+        "Losses",
+        "Win Rate",
+        "Avg Reward",
+        "Avg Moves",
+        "Avg Cells",
+        "Runtime",
+        "Q-Table"
+    ]
+
+    fig, ax = plt.subplots(figsize=(14, 3))
+    ax.axis("off")
+
+    table = ax.table(
+        cellText=table_data,
+        colLabels=column_labels,
+        loc="center",
+        cellLoc="center"
+    )
+
+    table.auto_set_font_size(False)
+    table.set_fontsize(9)
+    table.scale(1, 1.5)
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.close()
+
 
 if __name__ == "__main__":
     games = 100
@@ -278,3 +326,4 @@ if __name__ == "__main__":
 
     print_results(results)
     save_results(results)
+    save_results_table_png(results)
