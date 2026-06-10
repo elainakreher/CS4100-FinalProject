@@ -13,6 +13,7 @@ class RLAgent(BaseAgent):
         learning_rate=0.1,
         discount_factor=0.9,
         epsilon=0.2
+        epsilon_decay=0.995
     ):
         """
         width/height/mine_count are smaller by default because RL needs many games
@@ -31,6 +32,10 @@ class RLAgent(BaseAgent):
         # state_key = simplified version of current board
         # action = (x, y)
         self.q_table = {}
+
+        # for calculating eta
+        self.update_counts = {}
+
 
     def get_state_key(self, board):
         """
@@ -57,7 +62,7 @@ class RLAgent(BaseAgent):
 
         # choose a random move
         if random.random() < self.epsilon:
-            return random.choice(unknown_cells), True
+            return random.choice(unknown_cells)
 
         # choose the move with the highest Q-value
         best_move = None
@@ -70,7 +75,7 @@ class RLAgent(BaseAgent):
                 best_value = q_value
                 best_move = action
 
-        return best_move, False
+        return best_move
 
     def calculate_reward(self, old_board, new_board, new_state):
         """
@@ -105,6 +110,10 @@ class RLAgent(BaseAgent):
 
         old_q = self.get_q_value(old_state_key, action)
 
+        count = self.update_counts.get((old_state_key, action), 0)
+        eta = 1 / (1 + count)
+        self.update_counts[(old_state_key, action)] = count + 1
+
         possible_next_actions = self.get_unknown_cells(new_board)
 
         if possible_next_actions:
@@ -116,7 +125,7 @@ class RLAgent(BaseAgent):
         else:
             max_future_q = 0
 
-        updated_q = old_q + self.learning_rate * (
+        updated_q = old_q + eta * (
             reward + self.discount_factor * max_future_q - old_q
         )
 
@@ -133,9 +142,9 @@ class RLAgent(BaseAgent):
             old_board = old_game_state["board"]
             old_state_key = self.get_state_key(old_board)
 
-            action, rand = self.choose_move(old_board)
+            action = self.choose_move(old_board)
             x, y = action
-
+        
             move_result = self.make_move(x, y)
             new_state = move_result["new_state"]
 
@@ -152,6 +161,8 @@ class RLAgent(BaseAgent):
                 new_state_key,
                 new_board
             )
+
+            self.epsilon = max(0.01, self.epsilon * self.epsilon_decay)
 
             if new_state == "Win" or new_state == "Lose":
                 self.delete_game()
@@ -177,11 +188,14 @@ class RLAgent(BaseAgent):
                     episode + 1,
                     " Episodes Complete:",
                     wins,
-                    " Wins,",
+                    " Wins | ",
                     losses,
-                    " Losses,",
+                    "Losses | ",
                     len(self.q_table),
-                    " entries in Q-table"
+                    " entries in Q-table | ",
+                    round(wins / (wins + losses) * 100, 2),
+                    "% win rate"
+
                 )
 
         print("Training complete.")
