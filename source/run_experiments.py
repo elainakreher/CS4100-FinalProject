@@ -6,6 +6,7 @@ Evaluation Metrics:
 - Average safe cells revealed
 - Average runtime
 - Q-table size for RLAgent
+- Replay buffer size and network parameter count for DQNAgent
 """
 
 import time
@@ -15,6 +16,7 @@ from source.agents.random_agent import RandomAgent
 from source.agents.rule_based_agent import RuleBasedAgent
 from source.agents.probability_agent import ProbabilityAgent
 from source.agents.rl_agent import RLAgent
+from source.agents.dqn_agent import DQNAgent
 import matplotlib.pyplot as plt
 
 def count_hidden_cells(board):
@@ -46,6 +48,21 @@ def calculate_reward(old_board, new_board, new_state):
     return -1
 
 
+def normalize_move(chosen_move):
+    """
+    Some agents return just (x, y), while RLAgent currently returns
+    ((x, y), used_random). This helper lets the experiment runner handle both.
+    """
+    if (
+        isinstance(chosen_move, tuple)
+        and len(chosen_move) == 2
+        and isinstance(chosen_move[0], tuple)
+    ):
+        return chosen_move[0]
+
+    return chosen_move
+
+
 def run_single_game(agent):
     start_time = time.time()
     agent.create_game()
@@ -60,14 +77,14 @@ def run_single_game(agent):
         old_board = old_game_state["board"]
         old_state = old_game_state["state"]
 
-        # ff the game is already over --> stop
+        # if the game is already over, stop
         if old_state in ["Win", "Lose"]:
             runtime = time.time() - start_time
             agent.delete_game()
             return old_state, moves, total_reward, final_revealed_cells, runtime
 
         # ask agent to choose a move
-        x, y = agent.choose_move(old_board)
+        x, y = normalize_move(agent.choose_move(old_board))
 
         # send that move to the Minesweeper API
         move_result = agent.make_move(x, y)
@@ -86,7 +103,7 @@ def run_single_game(agent):
         reward = calculate_reward(old_board, new_board, new_state)
         total_reward += reward
 
-        # if move ended the game return results
+        # if move ended the game, return results
         if new_state in ["Win", "Lose"]:
             runtime = time.time() - start_time
             agent.delete_game()
@@ -129,7 +146,12 @@ def evaluate_agent(agent_class, agent_name, games=100, width=10, height=10, mine
         "average_episode_length": total_moves / games,
         "average_safe_cells_revealed": total_revealed_cells / games,
         "average_runtime": total_runtime / games,
-        "q_table_size": ""
+        "training_episodes": 0,
+        "training_wins": "",
+        "training_losses": "",
+        "q_table_size": "",
+        "replay_buffer_size": "",
+        "network_parameters": ""
     }
 
 
@@ -139,7 +161,28 @@ def evaluate_rl_agent(games=100, width=5, height=5, mine_count=3, training_episo
     """
     agent = RLAgent(width=width, height=height, mine_count=mine_count)
     print("\nTraining RLAgent...")
-    agent.train(episodes=training_episodes)
+    training_wins = 0
+    training_losses = 0
+
+    for episode in range(training_episodes):
+        result = agent.train_one_game()
+
+        if result == "Win":
+            training_wins += 1
+        else:
+            training_losses += 1
+
+        if (episode + 1) % 100 == 0:
+            print(
+                episode + 1,
+                " Episodes Complete:",
+                training_wins,
+                " Wins,",
+                training_losses,
+                " Losses,",
+                len(agent.q_table),
+                " entries in Q-table"
+            )
 
     wins = 0
     losses = 0
@@ -180,7 +223,69 @@ def evaluate_rl_agent(games=100, width=5, height=5, mine_count=3, training_episo
         "average_episode_length": total_moves / games,
         "average_safe_cells_revealed": total_revealed_cells / games,
         "average_runtime": total_runtime / games,
-        "q_table_size": len(agent.q_table)
+        "training_episodes": training_episodes,
+        "training_wins": training_wins,
+        "training_losses": training_losses,
+        "q_table_size": len(agent.q_table),
+        "replay_buffer_size": "",
+        "network_parameters": ""
+    }
+
+
+def evaluate_dqn_agent(games=100, width=5, height=5, mine_count=3, training_episodes=1000):
+    """
+    Trains and evaluates the DQNAgent.
+    """
+    agent = DQNAgent(width=width, height=height, mine_count=mine_count)
+    print("\nTraining DQNAgent...")
+    agent.train(episodes=training_episodes)
+
+    wins = 0
+    losses = 0
+    total_moves = 0
+    total_reward = 0
+    total_revealed_cells = 0
+    total_runtime = 0
+
+    old_epsilon = agent.epsilon
+    agent.epsilon = 0
+
+    for game_num in range(games):
+        result, moves, reward, revealed_cells, runtime = run_single_game(agent)
+
+        if result == "Win":
+            wins += 1
+        else:
+            losses += 1
+
+        total_moves += moves
+        total_reward += reward
+        total_revealed_cells += revealed_cells
+        total_runtime += runtime
+
+    agent.epsilon = old_epsilon
+
+    network_parameters = sum(
+        parameter.numel()
+        for parameter in agent.policy_network.parameters()
+    )
+
+    return {
+        "agent": "DQNAgent",
+        "games": games,
+        "wins": wins,
+        "losses": losses,
+        "win_rate": wins / games,
+        "average_reward": total_reward / games,
+        "average_episode_length": total_moves / games,
+        "average_safe_cells_revealed": total_revealed_cells / games,
+        "average_runtime": total_runtime / games,
+        "training_episodes": training_episodes,
+        "training_wins": agent.training_results.count("Win"),
+        "training_losses": agent.training_results.count("Lose"),
+        "q_table_size": "",
+        "replay_buffer_size": len(agent.replay_buffer),
+        "network_parameters": network_parameters
     }
 
 
@@ -197,7 +302,12 @@ def save_results(results, filename="results/experiment_results.csv"):
         "average_episode_length",
         "average_safe_cells_revealed",
         "average_runtime",
-        "q_table_size"
+        "training_episodes",
+        "training_wins",
+        "training_losses",
+        "q_table_size",
+        "replay_buffer_size",
+        "network_parameters"
     ]
 
     with open(filename, "w", newline="") as file:
@@ -222,12 +332,23 @@ def print_results(results):
         print(f"Average Safe Cells Revealed: {result['average_safe_cells_revealed']:.2f}")
         print(f"Average Runtime: {result['average_runtime']:.4f} seconds")
 
+        if result["training_episodes"] != 0:
+            print(f"Training Episodes: {result['training_episodes']}")
+            print(f"Training Wins: {result['training_wins']}")
+            print(f"Training Losses: {result['training_losses']}")
+
         if result["q_table_size"] != "":
             print(f"Q-table Size: {result['q_table_size']}")
+
+        if result["replay_buffer_size"] != "":
+            print(f"Replay Buffer Size: {result['replay_buffer_size']}")
+            print(f"Network Parameters: {result['network_parameters']}")
+
 
 def save_results_table_png(results, filename="results/figures/experiment_results_table.png"):
     os.makedirs("results/figures", exist_ok=True)
     table_data = []
+
     for result in results:
         table_data.append([
             result["agent"],
@@ -239,7 +360,12 @@ def save_results_table_png(results, filename="results/figures/experiment_results
             f"{result['average_episode_length']:.2f}",
             f"{result['average_safe_cells_revealed']:.2f}",
             f"{result['average_runtime']:.4f}s",
-            result["q_table_size"]
+            result["training_episodes"],
+            result["training_wins"],
+            result["training_losses"],
+            result["q_table_size"],
+            result["replay_buffer_size"],
+            result["network_parameters"]
         ])
 
     column_labels = [
@@ -252,10 +378,15 @@ def save_results_table_png(results, filename="results/figures/experiment_results
         "Avg Moves",
         "Avg Cells",
         "Runtime",
-        "Q-Table"
+        "Train Eps",
+        "Train Wins",
+        "Train Losses",
+        "Q-Table",
+        "Replay",
+        "Params"
     ]
 
-    fig, ax = plt.subplots(figsize=(14, 3))
+    fig, ax = plt.subplots(figsize=(22, 3))
     ax.axis("off")
 
     table = ax.table(
@@ -275,6 +406,10 @@ def save_results_table_png(results, filename="results/figures/experiment_results
 
 if __name__ == "__main__":
     games = 100
+    width = 5
+    height = 5
+    mine_count = 3
+    training_episodes = 1000
     results = []
 
     # random baseline
@@ -283,9 +418,9 @@ if __name__ == "__main__":
             RandomAgent,
             "RandomAgent",
             games=games,
-            width=10,
-            height=10,
-            mine_count=10
+            width=width,
+            height=height,
+            mine_count=mine_count
         )
     )
 
@@ -295,9 +430,9 @@ if __name__ == "__main__":
             RuleBasedAgent,
             "RuleBasedAgent",
             games=games,
-            width=10,
-            height=10,
-            mine_count=10
+            width=width,
+            height=height,
+            mine_count=mine_count
         )
     )
 
@@ -307,9 +442,9 @@ if __name__ == "__main__":
             ProbabilityAgent,
             "ProbabilityAgent",
             games=games,
-            width=10,
-            height=10,
-            mine_count=10
+            width=width,
+            height=height,
+            mine_count=mine_count
         )
     )
 
@@ -317,10 +452,21 @@ if __name__ == "__main__":
     results.append(
         evaluate_rl_agent(
             games=games,
-            width=5,
-            height=5,
-            mine_count=3,
-            training_episodes=1000
+            width=width,
+            height=height,
+            mine_count=mine_count,
+            training_episodes=training_episodes
+        )
+    )
+
+    # deep Q-learning agent
+    results.append(
+        evaluate_dqn_agent(
+            games=games,
+            width=width,
+            height=height,
+            mine_count=mine_count,
+            training_episodes=training_episodes
         )
     )
 
