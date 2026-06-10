@@ -12,7 +12,7 @@ class RLAgent(BaseAgent):
         mine_count=3,
         learning_rate=0.1,
         discount_factor=0.9,
-        epsilon=0.2
+        epsilon=0.2,
         epsilon_decay=0.995
     ):
         """
