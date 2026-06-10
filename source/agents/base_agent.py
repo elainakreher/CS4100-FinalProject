@@ -167,7 +167,8 @@ class BaseAgent:
             if state == "Win" or state == "Lose":
                 return state
 
-            x, y = self.choose_move(board)
+            move, rand = self.choose_move(board)
+            x, y = move
             move_result = self.make_move(x, y)
 
             new_state = move_result["new_state"]

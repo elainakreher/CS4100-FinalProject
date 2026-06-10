@@ -57,7 +57,7 @@ class RLAgent(BaseAgent):
 
         # choose a random move
         if random.random() < self.epsilon:
-            return random.choice(unknown_cells)
+            return random.choice(unknown_cells), True
 
         # choose the move with the highest Q-value
         best_move = None
@@ -70,7 +70,7 @@ class RLAgent(BaseAgent):
                 best_value = q_value
                 best_move = action
 
-        return best_move
+        return best_move, False
 
     def calculate_reward(self, old_board, new_board, new_state):
         """
@@ -133,7 +133,7 @@ class RLAgent(BaseAgent):
             old_board = old_game_state["board"]
             old_state_key = self.get_state_key(old_board)
 
-            action = self.choose_move(old_board)
+            action, rand = self.choose_move(old_board)
             x, y = action
 
             move_result = self.make_move(x, y)
@@ -174,14 +174,14 @@ class RLAgent(BaseAgent):
 
             if (episode + 1) % 100 == 0:
                 print(
-                    "Episode:",
                     episode + 1,
-                    "Wins:",
+                    " Episodes Complete:",
                     wins,
-                    "Losses:",
+                    " Wins,",
                     losses,
-                    "Q-table size:",
-                    len(self.q_table)
+                    " Losses,",
+                    len(self.q_table),
+                    " entries in Q-table"
                 )
 
         print("Training complete.")
@@ -217,6 +217,6 @@ class RLAgent(BaseAgent):
 if __name__ == "__main__":
     agent = RLAgent(width=5, height=5, mine_count=3)
     agent.train(episodes=1000)
+    agent.save_q_table()
     result = agent.play_trained_game()
     print("Trained RLAgent finished with result:", result)
-    agent.save_q_table()
