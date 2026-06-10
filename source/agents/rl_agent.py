@@ -27,6 +27,7 @@ class RLAgent(BaseAgent):
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.epsilon = epsilon
+        self.epsilon_decay = epsilon_decay
 
         # Key format: (state_key, action)
         # state_key = simplified version of current board
