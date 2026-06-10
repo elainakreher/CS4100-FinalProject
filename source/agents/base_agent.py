@@ -14,7 +14,7 @@ Each specific agent only has to implement choose_move()
 """
 
 import json
-import urllib.request
+import http.client
 
 
 class BaseAgent:
@@ -34,6 +34,7 @@ class BaseAgent:
         self.height = height
         self.mine_count = mine_count
         self.game_id = None
+        self.connection = http.client.HTTPConnection("localhost", 8080)
 
     def create_game(self):
         """
@@ -47,13 +48,14 @@ class BaseAgent:
             "mine_count": self.mine_count
         }
 
-        request = urllib.request.Request(
-            self.api_url + "/",
-            data=json.dumps(data).encode("utf-8"),
-            method="PUT"
+        self.connection.request(
+            "PUT",
+            "/",
+            body=json.dumps(data),
+            headers={"Content-Type": "application/json"}
         )
 
-        response = urllib.request.urlopen(request)
+        response = self.connection.getresponse()
         result = json.loads(response.read().decode("utf-8"))
 
         self.game_id = result["id"]
@@ -71,12 +73,12 @@ class BaseAgent:
              9 = mine
         """
 
-        request = urllib.request.Request(
-            self.api_url + "/" + self.game_id,
-            method="GET"
+        self.connection.request(
+            "GET",
+            "/" + self.game_id
         )
 
-        response = urllib.request.urlopen(request)
+        response = self.connection.getresponse()
         result = json.loads(response.read().decode("utf-8"))
 
         return result
@@ -96,13 +98,14 @@ class BaseAgent:
             "y": y
         }
 
-        request = urllib.request.Request(
-            self.api_url + "/" + self.game_id,
-            data=json.dumps(data).encode("utf-8"),
-            method="POST"
+        self.connection.request(
+            "POST",
+            "/" + self.game_id,
+            body=json.dumps(data),
+            headers={"Content-Type": "application/json"}
         )
 
-        response = urllib.request.urlopen(request)
+        response = self.connection.getresponse()
         result = json.loads(response.read().decode("utf-8"))
 
         return result
@@ -114,12 +117,12 @@ class BaseAgent:
         if self.game_id is None:
             return
 
-        request = urllib.request.Request(
-            self.api_url + "/" + self.game_id,
-            method="DELETE"
+        self.connection.request(
+            "DELETE",
+            "/" + self.game_id
         )
 
-        urllib.request.urlopen(request)
+        self.connection.getresponse().read()
         self.game_id = None
 
     def get_unknown_cells(self, board):

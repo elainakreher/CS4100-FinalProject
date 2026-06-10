@@ -1,5 +1,6 @@
 import random
 import json
+import time
 from source.agents.base_agent import BaseAgent
 
 
@@ -169,7 +170,7 @@ class RLAgent(BaseAgent):
                 self.delete_game()
                 return new_state
 
-    def train(self, episodes=1000): # can change values of episodes
+    def train(self, episodes=1000): 
         """
         Trains the RL agent over many games
         """
@@ -231,7 +232,7 @@ class RLAgent(BaseAgent):
 
 if __name__ == "__main__":
     agent = RLAgent(width=5, height=5, mine_count=3)
-    agent.train(episodes=1000)
+    agent.train(episodes=10000) # can change values of episodes
     agent.save_q_table()
     result = agent.play_trained_game()
     print("Trained RLAgent finished with result:", result)
