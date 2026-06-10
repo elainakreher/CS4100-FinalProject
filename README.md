@@ -5,6 +5,30 @@ Minesweeper is a game that requires players to make decisions using incomplete i
 
 ### How to Set up an Equivalent Python Environment 
 
+#### Prerequisites
+- Python 3.10+
+- numpy
+- matplotlib
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/elainakreher/CS4100-FinalProject.git
+cd CS4100-FinalProject
+```
+
+2. Create a virtual environment:
+
+```bash
+python3 -m venv .venv
+```
+
+3. Activate the virtual environment:
+
+```bash
+source .venv/bin/activate
+```
+
 ### How to Execute Code
 
 ### Organization Overview
