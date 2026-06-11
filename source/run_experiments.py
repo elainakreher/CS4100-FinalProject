@@ -19,6 +19,9 @@ from source.agents.rl_agent import RLAgent
 from source.agents.dqn_agent import DQNAgent
 import matplotlib.pyplot as plt
 
+training_curves = {}
+
+
 def count_hidden_cells(board):
     return sum(row.count(-1) for row in board)
 
@@ -61,6 +64,20 @@ def normalize_move(chosen_move):
         return chosen_move[0]
 
     return chosen_move
+
+
+def rolling_average(values, window_size=100):
+    """
+    Converts per-episode wins/losses into a rolling win-rate curve.
+    """
+    averages = []
+
+    for index in range(len(values)):
+        start_index = max(0, index - window_size + 1)
+        window = values[start_index:index + 1]
+        averages.append(sum(window) / len(window))
+
+    return averages
 
 
 def run_single_game(agent):
@@ -163,14 +180,17 @@ def evaluate_rl_agent(games=100, width=5, height=5, mine_count=3, training_episo
     print("\nTraining RLAgent...")
     training_wins = 0
     training_losses = 0
+    episode_wins = []
 
     for episode in range(training_episodes):
         result = agent.train_one_game()
 
         if result == "Win":
             training_wins += 1
+            episode_wins.append(1)
         else:
             training_losses += 1
+            episode_wins.append(0)
 
         if (episode + 1) % 100 == 0:
             print(
@@ -183,6 +203,8 @@ def evaluate_rl_agent(games=100, width=5, height=5, mine_count=3, training_episo
                 len(agent.q_table),
                 " entries in Q-table"
             )
+
+    training_curves["RLAgent"] = rolling_average(episode_wins)
 
     wins = 0
     losses = 0
@@ -239,6 +261,12 @@ def evaluate_dqn_agent(games=100, width=5, height=5, mine_count=3, training_epis
     agent = DQNAgent(width=width, height=height, mine_count=mine_count)
     print("\nTraining DQNAgent...")
     agent.train(episodes=training_episodes)
+
+    episode_wins = [
+        1 if result == "Win" else 0
+        for result in agent.training_results
+    ]
+    training_curves["DQNAgent"] = rolling_average(episode_wins)
 
     wins = 0
     losses = 0
@@ -404,12 +432,35 @@ def save_results_table_png(results, filename="results/figures/experiment_results
     plt.close()
 
 
+def save_training_curves_png(curves, filename="results/figures/rl_dqn_training_curves.png"):
+    """
+    Saves a line plot of rolling training win rate for RLAgent and DQNAgent.
+    """
+    os.makedirs("results/figures", exist_ok=True)
+
+    plt.figure(figsize=(10, 6))
+
+    for agent_name, rolling_win_rates in curves.items():
+        episodes = range(1, len(rolling_win_rates) + 1)
+        plt.plot(episodes, rolling_win_rates, label=agent_name)
+
+    plt.title("RL and DQN Training Curves")
+    plt.xlabel("Training Episode")
+    plt.ylabel("Rolling Win Rate")
+    plt.ylim(0, 1)
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+
+
 if __name__ == "__main__":
     games = 100
     width = 5
     height = 5
     mine_count = 3
-    training_episodes = 1000
+    training_episodes = 50000
     results = []
 
     # random baseline
@@ -473,3 +524,4 @@ if __name__ == "__main__":
     print_results(results)
     save_results(results)
     save_results_table_png(results)
+    save_training_curves_png(training_curves)

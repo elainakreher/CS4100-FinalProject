@@ -20,11 +20,12 @@ class DQN(nn.Module):
     """
     def __init__(self, input_size, output_size):
         super().__init__()
-
         self.network = nn.Sequential(
-            nn.Linear(input_size, 64),
+            nn.Linear(input_size, 128),
             nn.ReLU(),
-            nn.Linear(64, 64),
+            nn.Linear(128, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, output_size),
         )
@@ -35,20 +36,22 @@ class DQN(nn.Module):
 
 class DQNAgent(BaseAgent):
     def __init__(
-        self,
-        api_url="http://localhost:8080",
-        width=5,
-        height=5,
-        mine_count=3,
-        learning_rate=0.001,
-        discount_factor=0.95,
-        epsilon=1.0,
-        epsilon_decay=0.995,
-        epsilon_min=0.05,
-        replay_buffer_size=5000,
-        batch_size=32,
-        target_update_frequency=100,
+            self,
+            api_url="http://localhost:8080",
+            width=5,
+            height=5,
+            mine_count=3,
+            learning_rate=0.0005,  # lower = more stable
+            discount_factor=0.95,
+            epsilon=1.0,
+            epsilon_decay=0.9995,  # slower decay so it explores longer
+            epsilon_min=0.05,
+            replay_buffer_size=10000,  # larger buffer
+            batch_size=64,  # larger batches
+            target_update_frequency=200,
     ):
+
+
         super().__init__(api_url=api_url, width=width, height=height, mine_count=mine_count)
 
         self.learning_rate = learning_rate
@@ -155,7 +158,7 @@ class DQNAgent(BaseAgent):
         Calculates the reward for one move
         """
         if new_state == "Win":
-            return 100
+            return 500
 
         if new_state == "Lose":
             return -100
@@ -165,9 +168,8 @@ class DQNAgent(BaseAgent):
         cells_revealed = old_hidden - new_hidden
 
         if cells_revealed > 0:
-            return 1 + cells_revealed
-
-        return -1
+            return cells_revealed * 2  # reward each revealed cell more
+        return -0.5  # smaller penalty for neutral moves
 
     def store_experience(self, state, action, reward, next_state, next_board, done):
         """
@@ -179,7 +181,7 @@ class DQNAgent(BaseAgent):
         """
         Trains the policy network on one random minibatch from replay memory
         """
-        if len(self.replay_buffer) < self.batch_size:
+        if len(self.replay_buffer) < self.batch_size * 10:
             return
 
         batch = random.sample(self.replay_buffer, self.batch_size)
