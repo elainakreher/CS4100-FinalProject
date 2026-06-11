@@ -84,10 +84,10 @@ class RLAgent(BaseAgent):
         Gives the agent a reward after each move
         """
         if new_state == "Win":
-            return 500  # change reward values
+            return 300
 
         if new_state == "Lose":
-            return -100 # change values
+            return -300
 
         # count how many cells were revealed after the move
         old_hidden = sum(row.count(-1) for row in old_board)

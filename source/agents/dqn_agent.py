@@ -158,10 +158,10 @@ class DQNAgent(BaseAgent):
         Calculates the reward for one move
         """
         if new_state == "Win":
-            return 500
+            return 300
 
         if new_state == "Lose":
-            return -100
+            return -300
 
         old_hidden = sum(row.count(-1) for row in old_board)
         new_hidden = sum(row.count(-1) for row in new_board)

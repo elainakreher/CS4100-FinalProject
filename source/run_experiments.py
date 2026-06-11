@@ -34,10 +34,10 @@ def count_revealed_cells(board):
 
 def calculate_reward(old_board, new_board, new_state):
     if new_state == "Win":
-        return 500
+        return 300
 
     if new_state == "Lose":
-        return -100
+        return -300
 
     old_hidden = count_hidden_cells(old_board)
     new_hidden = count_hidden_cells(new_board)
