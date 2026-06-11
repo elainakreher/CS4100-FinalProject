@@ -216,6 +216,18 @@ class RLAgent(BaseAgent):
         with open(filename, "w") as file:
             json.dump(q_table_as_strings, file)
 
+    def load_q_table(self, filename="results/q_table.json"):
+        """
+        loading a Q-table
+        """
+        with open(filename, "r") as file:
+            q_table_as_strings = json.load(file)
+    
+        self.q_table = {
+            eval(key): value
+            for key, value in q_table_as_strings.items()
+    }
+
     def play_trained_game(self):
         """
         Plays one game using learned Q-values

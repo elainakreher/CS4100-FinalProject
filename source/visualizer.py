@@ -1,10 +1,3 @@
-"""
-Minesweeper pygame visualizer module
-
-Provides draw_board() for rendering a board state to a pygame surface.
-Import this into your demo script — don't run directly.
-"""
-
 import pygame
 
 CELL_SIZE = 40
@@ -28,7 +21,6 @@ NUMBER_COLORS = {
 
 
 def board_surface_size(board):
-    """Returns (pixel_width, pixel_height) for a given board."""
     height = len(board)
     width  = len(board[0]) if height > 0 else 0
     return width * CELL_SIZE, height * CELL_SIZE
@@ -36,7 +28,7 @@ def board_surface_size(board):
 
 def draw_board(screen, board, font):
     """
-    Draws the current board state onto the given pygame surface.
+    Draws the current board state.
 
     board: 2D list where
         -1 = hidden
@@ -72,10 +64,6 @@ def draw_board(screen, board, font):
 
 
 def init_display(board, title="Minesweeper"):
-    """
-    Initializes pygame and returns (screen, font).
-    Call once before the game loop.
-    """
     pygame.init()
     font   = pygame.font.SysFont(None, 28)
     w, h   = board_surface_size(board)
@@ -85,14 +73,13 @@ def init_display(board, title="Minesweeper"):
 
 
 def render(screen, board, font, bg=(100, 100, 100)):
-    """Clears screen, draws board, flips display."""
     screen.fill(bg)
     draw_board(screen, board, font)
     pygame.display.flip()
 
 
 def poll_quit():
-    """Returns True if the user closed the window."""
+    " has the user closed the pygame window? "
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return True
