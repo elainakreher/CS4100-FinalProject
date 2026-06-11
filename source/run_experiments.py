@@ -34,7 +34,7 @@ def count_revealed_cells(board):
 
 def calculate_reward(old_board, new_board, new_state):
     if new_state == "Win":
-        return 100
+        return 500
 
     if new_state == "Lose":
         return -100
@@ -46,9 +46,8 @@ def calculate_reward(old_board, new_board, new_state):
 
     # Reward safe progress
     if cells_revealed > 0:
-        return 1 + cells_revealed
-    # Small penalty if no useful progress happened
-    return -1
+        return cells_revealed * 2  # reward each revealed cell more
+    return -0.5  # smaller penalty for neutral moves
 
 
 def normalize_move(chosen_move):

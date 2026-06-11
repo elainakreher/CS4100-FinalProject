@@ -352,7 +352,7 @@ class DQNAgent(BaseAgent):
 
 if __name__ == "__main__":
     agent = DQNAgent(width=5, height=5, mine_count=3)
-    agent.train(episodes=1000)
+    agent.train(episodes=50000)
     result = agent.play_trained_game()
     print("DQNAgent finished with result:", result)
     agent.save_model("results/dqn_model.pth")

@@ -84,7 +84,7 @@ class RLAgent(BaseAgent):
         Gives the agent a reward after each move
         """
         if new_state == "Win":
-            return 100  # change reward values
+            return 500  # change reward values
 
         if new_state == "Lose":
             return -100 # change values
@@ -97,10 +97,8 @@ class RLAgent(BaseAgent):
 
         # reward the agent for safely revealing cells
         if cells_revealed > 0:
-            return 1 + cells_revealed
-
-        # small penalty if nothing useful happened
-        return -1
+            return cells_revealed * 2  # reward each revealed cell more
+        return -0.5  # smaller penalty for neutral moves
 
     def update_q_value(self, old_state_key, action, reward, new_state_key, new_board):
         """
