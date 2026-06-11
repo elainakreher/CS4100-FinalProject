@@ -77,7 +77,14 @@ class DQNAgent(BaseAgent):
     def board_to_tensor(self, board):
         """
         Flattens a board into a length width * height float tensor
-        Hidden cells are kept negative so the network can distinguish them from revealed zero cells
+
+        Board values are encoded into a consistent [0, 1] range:
+        - hidden cell (-1) -> 0.0
+        - revealed clues (0-8) -> 0.1 through 0.9
+        - revealed mine (9) -> 1.0
+
+        This keeps hidden cells, empty revealed cells, clue numbers, and mines
+        distinct without sending out-of-range values into the neural network.
         """
 
         flat_board = []
@@ -85,12 +92,12 @@ class DQNAgent(BaseAgent):
             for y in range(self.height):
                 cell = board[x][y]
 
+                # Keep every board value in [0, 1] so the neural network receives consistently scaled inputs
+                # Hidden cells map to 0.0 revealed clues map to 0.1-0.9 and revealed mines map to 1.0
                 if cell == -1:
-                    flat_board.append(-1.0)
-                elif cell == 9:
-                    flat_board.append(1.0)
+                    flat_board.append(0.0)
                 else:
-                    flat_board.append(cell / 8.0)
+                    flat_board.append((cell + 1) / 10.0)
 
         return torch.tensor(flat_board, dtype=torch.float32)
 

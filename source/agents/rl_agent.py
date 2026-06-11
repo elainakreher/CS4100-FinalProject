@@ -204,7 +204,7 @@ class RLAgent(BaseAgent):
         print("Final wins:", wins)
         print("Final losses:", losses)
 
-    def save_q_table(self, filename="results/q_table_1000000.json"):
+    def save_q_table(self, filename="results/q_table.json"):
         """
         Saving the Q-table
         """
