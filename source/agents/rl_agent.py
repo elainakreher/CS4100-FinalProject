@@ -188,13 +188,13 @@ class RLAgent(BaseAgent):
             if (episode + 1) % 100 == 0:
                 print(
                     episode + 1,
-                    " Episodes Complete:",
+                    "Episodes Complete:",
                     wins,
-                    " Wins | ",
+                    "Wins | ",
                     losses,
                     "Losses | ",
                     len(self.q_table),
-                    " entries in Q-table | ",
+                    "entries in Q-table | ",
                     round(wins / (wins + losses) * 100, 2),
                     "% win rate"
 
@@ -204,7 +204,7 @@ class RLAgent(BaseAgent):
         print("Final wins:", wins)
         print("Final losses:", losses)
 
-    def save_q_table(self, filename="results/q_table.json"):
+    def save_q_table(self, filename="results/q_table_1000000.json"):
         """
         Saving the Q-table
         """
@@ -244,7 +244,19 @@ class RLAgent(BaseAgent):
 
 if __name__ == "__main__":
     agent = RLAgent(width=5, height=5, mine_count=3)
-    agent.train(episodes=10000) # can change values of episodes
-    agent.save_q_table()
+
+    # delete following code tmr
+    try:
+        agent.train(episodes=1000000)
+    except Exception as e:
+        print("Training interrupted:", e)
+    finally:
+        agent.save_q_table()
+        print("Q-table saved.")
     result = agent.play_trained_game()
     print("Trained RLAgent finished with result:", result)
+   
+''' agent.train(episodes=100000) # can change values of episodes
+    agent.save_q_table()
+    result = agent.play_trained_game()
+    print("Trained RLAgent finished with result:", result) '''

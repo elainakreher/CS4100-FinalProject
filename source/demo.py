@@ -27,7 +27,7 @@ elif args.agent == "probability":
     agent = ProbabilityAgent(width=10, height=10, mine_count=10)
 elif args.agent == "rl":
     agent = RLAgent(width=5, height=5, mine_count=3)
-    agent.load_q_table("results/q_table.json")
+    agent.load_q_table("results/q_table_1000000.json")
 elif args.agent == "dqn":
     agent = DQNAgent(width=5, height=5, mine_count=3)
     agent.load_model("results/dqn_model.pth")

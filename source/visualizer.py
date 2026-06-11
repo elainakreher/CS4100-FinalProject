@@ -36,14 +36,14 @@ def draw_board(screen, board, font):
          1-8 = revealed, number of adjacent mines
          9 = mine (revealed on loss)
     """
-    for y, row in enumerate(board):
-        for x, cell in enumerate(row):
+    for x, col in enumerate(board):
+        for y, cell in enumerate(col):
             rect = (
                 x * CELL_SIZE + MARGIN,
                 y * CELL_SIZE + MARGIN,
                 CELL_SIZE - MARGIN * 2,
                 CELL_SIZE - MARGIN * 2,
-            )
+        )
 
             if cell == -1:
                 pygame.draw.rect(screen, HIDDEN, rect)
@@ -79,7 +79,7 @@ def render(screen, board, font, bg=(100, 100, 100)):
 
 
 def poll_quit():
-    " has the user closed the pygame window? "
+    " has the user closed the pygame"
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return True
