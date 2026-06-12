@@ -1,4 +1,12 @@
-import sys
+
+"""
+This file connects the visualizer to the agents defined in this project. It is
+ran with a command line argument representing which agent will be used to play
+a single game of minesweeper. Each move is made with a 1 second delay. The display window
+will close and the outcome of the game will be printed to the terminal when a terminal
+condition is reached
+"""
+
 import time
 import pygame
 import argparse
@@ -35,6 +43,9 @@ elif args.agent == "dqn":
 
 
 def run_demo(agent, delay=1):
+    """
+    run and render a full episode of minesweeper with the given agent 
+    """
     agent.create_game()
     
     game_state = agent.get_game_state()
