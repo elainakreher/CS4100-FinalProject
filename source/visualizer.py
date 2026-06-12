@@ -1,3 +1,8 @@
+"""
+This file defines the GUI for the minesweeper game. It renders
+the board according to the typical minesweeper conventions. Numbers 1-8 
+show how many mines neighbor a revealed cell. Mines appear as a red cell. """
+
 import pygame
 
 CELL_SIZE = 40
@@ -21,6 +26,9 @@ NUMBER_COLORS = {
 
 
 def board_surface_size(board):
+    """
+    Calculate the display size for the given game board
+    """
     height = len(board)
     width  = len(board[0]) if height > 0 else 0
     return width * CELL_SIZE, height * CELL_SIZE
@@ -64,6 +72,9 @@ def draw_board(screen, board, font):
 
 
 def init_display(board, title="Minesweeper"):
+    """
+    initialize minesweeper GUI
+    """
     pygame.init()
     font   = pygame.font.SysFont(None, 28)
     w, h   = board_surface_size(board)
@@ -73,6 +84,9 @@ def init_display(board, title="Minesweeper"):
 
 
 def render(screen, board, font, bg=(100, 100, 100)):
+    """
+    update minsesweeper display based on current board
+    """
     screen.fill(bg)
     draw_board(screen, board, font)
     pygame.display.flip()
