@@ -242,19 +242,7 @@ class RLAgent(BaseAgent):
 
 if __name__ == "__main__":
     agent = RLAgent(width=5, height=5, mine_count=3)
-
-    # delete following code tmr
-    try:
-        agent.train(episodes=1000000)
-    except Exception as e:
-        print("Training interrupted:", e)
-    finally:
-        agent.save_q_table()
-        print("Q-table saved.")
-    result = agent.play_trained_game()
-    print("Trained RLAgent finished with result:", result)
-   
-''' agent.train(episodes=100000) # can change values of episodes
+    agent.train(episodes=100000) # can change values of episodes
     agent.save_q_table()
     result = agent.play_trained_game()
-    print("Trained RLAgent finished with result:", result) '''
+    print("Trained RLAgent finished with result:", result)
